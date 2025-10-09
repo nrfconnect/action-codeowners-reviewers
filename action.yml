@@ -1,0 +1,31 @@
+
+name: "Adds reviewers from CODEOWNERS"
+description: "Automatically requests reviewers based on the CODEOWNERS file"
+
+inputs:
+  github_token:
+    description: "GitHub token with permission to request reviews"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.12
+
+    - name: Install dependencies
+      run: pip install -r ${{ github.action_path }}/requirements.txt
+      shell: bash
+
+    - name: Run reviewer assignment
+      run: python ${{ github.action_path }}/action.py
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        GITHUB_EVENT_PATH: ${{ github.event_path }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
