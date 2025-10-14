@@ -67,6 +67,9 @@ def main():
     repo = gh.get_repo(repo_name)
     pr = repo.get_pull(pr_number)
 
+    if pr.draft:
+        sys.exit(0)
+
     changed_files = [f.filename for f in pr.get_files()]
     print(f"Changed files: {', '.join(changed_files)}")
 
