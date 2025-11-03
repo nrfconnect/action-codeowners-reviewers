@@ -45,6 +45,24 @@ def split_users_and_teams(owners):
             reviewers.append(owner)
     return reviewers, team_reviewers
 
+def filter_reviewers(pr, reviewers, team_reviewers):
+    # Get a list of all reviews and accumulate to get the last review state
+    reviews = dict()
+    for review in pr.get_reviews():
+        reviews[review.user.login] = review.state
+
+    r = [r for r in reviewers if r not in reviews]
+    t = []
+    for team in team_reviewers:
+        team = org.get_team_by_slug(team)
+        for m in team.get_members():
+            if m.login in reviews:
+                break
+        else:
+            t.append(team)
+
+    return r, t
+
 def main():
     github_token = os.getenv("GITHUB_TOKEN")
 
@@ -88,10 +106,14 @@ def main():
         return
 
     reviewers, team_reviewers = split_users_and_teams(all_owners)
-    print(f"Requesting individual reviewers: {', '.join(reviewers) or 'None'}")
-    print(f"Requesting team reviewers: {', '.join(team_reviewers) or 'None'}")
+    print(f"Matched individual reviewers: {', '.join(reviewers) or 'None'}")
+    print(f"Matched team reviewers: {', '.join(team_reviewers) or 'None'}")
+    reviewers, team_reviewers = filter_reviewers(pr, reviewers, team_reviewers)
+    print(f"Filtered individual reviewers: {', '.join(reviewers) or 'None'}")
+    print(f"Filtered team reviewers: {', '.join(team_reviewers) or 'None'}")
 
     try:
+        # Check for review status
         pr.create_review_request(reviewers=reviewers, team_reviewers=team_reviewers)
         print("Review request created successfully.")
     except Exception as e:
