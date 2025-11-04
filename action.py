@@ -59,7 +59,7 @@ def filter_reviewers(org, pr, reviewers, team_reviewers):
             if m.login in reviews:
                 break
         else:
-            t.append(team)
+            t.append(team.name)
 
     return r, t
 
