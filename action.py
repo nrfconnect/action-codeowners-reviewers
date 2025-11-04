@@ -45,7 +45,7 @@ def split_users_and_teams(owners):
             reviewers.append(owner)
     return reviewers, team_reviewers
 
-def filter_reviewers(pr, reviewers, team_reviewers):
+def filter_reviewers(org, pr, reviewers, team_reviewers):
     # Get a list of all reviews and accumulate to get the last review state
     reviews = dict()
     for review in pr.get_reviews():
@@ -82,6 +82,7 @@ def main():
     print(f"Processing PR #{pr_number} in {repo_name}...")
 
     gh = Github(github_token)
+    org = gh.get_organization("nrfconnect")
     repo = gh.get_repo(repo_name)
     pr = repo.get_pull(pr_number)
 
@@ -108,7 +109,7 @@ def main():
     reviewers, team_reviewers = split_users_and_teams(all_owners)
     print(f"Matched individual reviewers: {', '.join(reviewers) or 'None'}")
     print(f"Matched team reviewers: {', '.join(team_reviewers) or 'None'}")
-    reviewers, team_reviewers = filter_reviewers(pr, reviewers, team_reviewers)
+    reviewers, team_reviewers = filter_reviewers(org, pr, reviewers, team_reviewers)
     print(f"Filtered individual reviewers: {', '.join(reviewers) or 'None'}")
     print(f"Filtered team reviewers: {', '.join(team_reviewers) or 'None'}")
 
